@@ -47,8 +47,6 @@ def index_to_position(index: Union[Index, List[int]], strides: Strides) -> int:
         Position in storage
 
     """
-    if isinstance(index, list):
-        index = np.array(index, dtype=np.int32)
     res = 0
     for ind, stride in zip(index, strides):
         res += ind * stride
