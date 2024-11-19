@@ -10,7 +10,9 @@ from .tensor_data import (
     broadcast_index,
     index_to_position,
     shape_broadcast,
-    to_index, Index, MAX_DIMS,
+    to_index,
+    Index,
+    MAX_DIMS,
 )
 from .tensor_ops import MapProto, TensorOps
 
@@ -170,8 +172,8 @@ def tensor_map(
         # TODO: Implement for Task 3.1.
 
         for i in prange(len(out)):
-            out_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
-            in_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
+            out_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
+            in_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
             to_index(i, out_shape, out_index)
             broadcast_index(out_index, out_shape, in_shape, in_index)
             in_position = index_to_position(in_index, in_strides)
@@ -217,9 +219,9 @@ def tensor_zip(
     ) -> None:
         # TODO: Implement for Task 3.1.
         for i in prange(len(out)):
-            a_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
-            b_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
-            out_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
+            a_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
+            b_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
+            out_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
             to_index(i, out_shape, out_index)
             broadcast_index(out_index, out_shape, a_shape, a_index)
             broadcast_index(out_index, out_shape, b_shape, b_index)
@@ -263,7 +265,7 @@ def tensor_reduce(
     ) -> None:
         # TODO: Implement for Task 3.1.
         for i in prange(len(out)):
-            out_index: Index = np.zeros(MAX_DIMS,dtype=np.int32)
+            out_index: Index = np.zeros(MAX_DIMS, dtype=np.int32)
             to_index(i, out_shape, out_index)
             out_position = index_to_position(out_index, out_strides)
             for j in range(a_shape[reduce_dim]):
@@ -324,11 +326,17 @@ def _tensor_matrix_multiply(
     for i in prange(out_shape[0]):
         for j in prange(out_shape[1]):
             for k in range(out_shape[2]):
-                out_position = i * out_strides[0] + j * out_strides[1] + k * out_strides[2]
+                out_position = (
+                    i * out_strides[0] + j * out_strides[1] + k * out_strides[2]
+                )
                 acc = 0.0
                 for l in range(a_shape[2]):
-                    a_position = i * a_batch_stride + j * a_strides[1] + l * a_strides[2]
-                    b_position = i * b_batch_stride + l * b_strides[1] + k * b_strides[2]
+                    a_position = (
+                        i * a_batch_stride + j * a_strides[1] + l * a_strides[2]
+                    )
+                    b_position = (
+                        i * b_batch_stride + l * b_strides[1] + k * b_strides[2]
+                    )
                     acc += a_storage[a_position] * b_storage[b_position]
                 out[out_position] = acc
 

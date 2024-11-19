@@ -276,7 +276,6 @@ def _sum_practice(out: Storage, a: Storage, size: int) -> None:
         out[cuda.blockIdx.x] = cache[0]
 
 
-
 jit_sum_practice = cuda.jit()(_sum_practice)
 
 
@@ -335,16 +334,15 @@ def tensor_reduce(
                 cache[pos] = a_storage[a_pos]
                 cuda.syncthreads()
 
-                temp=0
+                temp = 0
                 while 2**temp < BLOCK_DIM:
                     if pos % (2**temp) == 0:
                         cache[pos] = fn(cache[pos], cache[pos + 2**temp])
                     cuda.syncthreads()
-                    temp+=1
+                    temp += 1
 
                 if pos == 0:
                     out[op] = cache[0]
-
 
     return jit(_reduce)  # type: ignore
 
@@ -384,18 +382,18 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
     # TODO: Implement for Task 3.3.
     a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
     b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
-    i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x #
-    j = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y #
+    i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x  #
+    j = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y  #
     if i < size and j < size:
-        a_shared[cuda.threadIdx.x, cuda.threadIdx.y] = a[i*size + cuda.threadIdx.y]
-        b_shared[cuda.threadIdx.x, cuda.threadIdx.y] = b[cuda.threadIdx.x*size + j]
+        a_shared[cuda.threadIdx.x, cuda.threadIdx.y] = a[i * size + cuda.threadIdx.y]
+        b_shared[cuda.threadIdx.x, cuda.threadIdx.y] = b[cuda.threadIdx.x * size + j]
         cuda.syncthreads()
 
-        temp=0.0
+        temp = 0.0
         for k in range(size):
             temp += a_shared[cuda.threadIdx.x, k] * b_shared[k, cuda.threadIdx.y]
 
-        out[i*size + j] = temp
+        out[i * size + j] = temp
 
 
 jit_mm_practice = jit(_mm_practice)
@@ -478,15 +476,19 @@ def _tensor_matrix_multiply(
         tempj = k_block + ty
         if tempi < a_rows and tempj < k_size:
             a_shared[tx, ty] = a_storage[
-                batch * a_batch_stride + tempi * a_strides[-2] + tempj * a_strides[-1]]
-        else: a_shared[tx, ty] = 0.0
+                batch * a_batch_stride + tempi * a_strides[-2] + tempj * a_strides[-1]
+            ]
+        else:
+            a_shared[tx, ty] = 0.0
 
         tempbi = k_block + tx
         tempbj = j
         if tempbi < k_size and tempbj < b_cols:
             b_shared[tx, ty] = b_storage[
-                batch * b_batch_stride + tempbi * b_strides[-2] + tempbj * b_strides[-1]]
-        else: b_shared[tx, ty] = 0.0
+                batch * b_batch_stride + tempbi * b_strides[-2] + tempbj * b_strides[-1]
+            ]
+        else:
+            b_shared[tx, ty] = 0.0
         cuda.syncthreads()
         for k in range(min(BLOCK_DIM, k_size - k_block)):
             res += a_shared[tx, k] * b_shared[k, ty]

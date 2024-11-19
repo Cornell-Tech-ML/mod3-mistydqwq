@@ -134,9 +134,7 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         elif dim2 == 1 or dim1 == dim2:
             result_shape[i] = dim1
         else:
-            raise IndexingError(
-                f"Shapes cannot be broadcasted. {shape1} and {shape2}"
-            )
+            raise IndexingError(f"Shapes cannot be broadcasted. {shape1} and {shape2}")
 
     return tuple(reversed(result_shape))
 
