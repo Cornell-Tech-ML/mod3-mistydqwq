@@ -467,35 +467,33 @@ def _tensor_matrix_multiply(
     #    c) Compute the dot produce for position c[i, j]
 
     # Accumulator for out[i,j] -> this thread will compute this value.
-    temp = 0.0
+    res = 0.0
 
-    for k in range(0, a_shape[-1], BLOCK_DIM):
-        # 加载 A 的子矩阵到共享内存
-        if i < a_shape[-2] and (k + ty) < a_shape[-1]:
-            shared_a[tx, ty] = a_storage[
-                batch * a_batch_stride + i * a_strides[-2] + (k + ty) * a_strides[-1]]
-        else:
-            shared_a[tx, ty] = 0.0
+    k_size = a_shape[-1]
+    a_rows = a_shape[-2]
+    b_cols = b_shape[-1]
 
-        # 加载 B 的子矩阵到共享内存
-        if (k + tx) < b_shape[-2] and j < b_shape[-1]:
-            shared_b[tx, ty] = b_storage[
-                batch * b_batch_stride + (k + tx) * b_strides[-2] + j * b_strides[-1]]
-        else:
-            shared_b[tx, ty] = 0.0
+    for k_block in range(0, k_size, BLOCK_DIM):
+        tempi = i
+        tempj = k_block + ty
+        if tempi < a_rows and tempj < k_size:
+            a_shared[tx, ty] = a_storage[
+                batch * a_batch_stride + tempi * a_strides[-2] + tempj * a_strides[-1]]
+        else: a_shared[tx, ty] = 0.0
 
+        tempbi = k_block + tx
+        tempbj = j
+        if tempbi < k_size and tempbj < b_cols:
+            b_shared[tx, ty] = b_storage[
+                batch * b_batch_stride + tempbi * b_strides[-2] + tempbj * b_strides[-1]]
+        else: b_shared[tx, ty] = 0.0
+        cuda.syncthreads()
+        for k in range(min(BLOCK_DIM, k_size - k_block)):
+            res += a_shared[tx, k] * b_shared[k, ty]
         cuda.syncthreads()
 
-        # 计算部分结果
-        for q in range(BLOCK_DIM):
-            temp += shared_a[tx, q] * shared_b[q, ty]
-
-        cuda.syncthreads()
-
-    # 将结果写入全局内存
-    if i < out_shape[-2] and j < out_shape[-1]:
-        out_pos = (batch * out_strides[0] + i * out_strides[1] + j * out_strides[2])
-        out[out_pos] = temp
+    if i < a_rows and j < b_cols:
+        out[batch * out_strides[0] + i * out_strides[1] + j * out_strides[2]] = res
 
 
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
