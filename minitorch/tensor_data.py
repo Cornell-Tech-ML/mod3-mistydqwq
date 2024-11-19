@@ -119,29 +119,27 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
 
     """
-    shape_a, shape_b = shape1, shape2
-    max_length = max(len(shape_a), len(shape_b))
-    result_reversed = [0] * max_length
-    shape_a_reversed = list(reversed(shape_a))
-    shape_b_reversed = list(reversed(shape_b))
-
-    for i in range(max_length):
-        if i >= len(shape_a):
-            result_reversed[i] = shape_b_reversed[i]
-        elif i >= len(shape_b):
-            result_reversed[i] = shape_a_reversed[i]
+    a, b = shape1, shape2
+    m = max(len(a), len(b))
+    c_rev = [0] * m
+    a_rev = list(reversed(a))
+    b_rev = list(reversed(b))
+    for i in range(m):
+        if i >= len(a):
+            c_rev[i] = b_rev[i]
+        elif i >= len(b):
+            c_rev[i] = a_rev[i]
         else:
-            result_reversed[i] = max(shape_a_reversed[i], shape_b_reversed[i])
-            if shape_a_reversed[i] != result_reversed[i] and shape_a_reversed[i] != 1:
+            c_rev[i] = max(a_rev[i], b_rev[i])
+            if a_rev[i] != c_rev[i] and a_rev[i] != 1:
                 raise IndexingError(
-                    f"Shapes cannot be broadcasted. {shape1} and {shape2}"
+                    "Shapes cannot be broadcasted. {} and {}".format(shape1, shape2)
                 )
-            if shape_b_reversed[i] != result_reversed[i] and shape_b_reversed[i] != 1:
+            if b_rev[i] != c_rev[i] and b_rev[i] != 1:
                 raise IndexingError(
-                    f"Shapes cannot be broadcasted. {shape1} and {shape2}"
+                    "Shapes cannot be broadcasted. {} and {}".format(shape1, shape2)
                 )
-
-    return tuple(reversed(result_reversed))
+    return tuple(reversed(c_rev))
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
