@@ -66,7 +66,7 @@ def to_index(ordinal: int, shape: Shape, out_index: Union[Index, List[int]]) -> 
         out_index : return index corresponding to position.
 
     """
-    remaining = ordinal
+    remaining = ordinal + 0
     for i in range(len(shape) - 1, -1, -1):
         dim_size = shape[i]
         out_index[i] = int(remaining % dim_size)
