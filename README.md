@@ -1,5 +1,28 @@
 # MiniTorch Module 3
 
+## Simple
+![Simple_CPU](img/simple_cpu.png "Simple CPU")
+
+![Simple_GPU](img/simple_gpu.png "Simple GPU")
+
+
+## Split
+![Split_CPU](img/split_cpu.png "Split CPU")
+
+![Split_GPU](img/split_gpu.png "Split GPU")
+
+
+## XOR
+![XOR_CPU](img/xor_cpu.png "XOR CPU")
+
+![XOR_GPU](img/xor_gpu.png "XOR GPU")
+
+
+## Bigger XOR
+![Bigger_XOR_CPU](img/bigger_xor_cpu.png "Bigger XOR CPU")
+
+![Bigger_XOR_GPU](img/bigger_xor_gpu.png "Bigger XOR GPU")
+
 <img src="https://minitorch.github.io/minitorch.svg" width="50%">
 
 * Docs: https://minitorch.github.io/
